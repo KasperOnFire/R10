@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package r10;
 
 import battleship.interfaces.BattleshipsPlayer;
@@ -215,7 +211,12 @@ public class AI implements BattleshipsPlayer {
                 potentialShipShots.add(infoShot.getPosRight());
                 for (Position potPos : potentialShipShots) {
                     if (potPos.x > 9 || potPos.x < 0 || potPos.y > 9 || potPos.y < 0) {
-                        potentialShipShots.remove(potPos);
+                        potentialShipShots.remove(potentialShipShots.indexOf(potPos));
+                    }
+                    for (Position firedPos : shotsFired) {
+                        if(firedPos == potPos){
+                            potentialShipShots.remove(potentialShipShots.indexOf(potPos));
+                        }
                     }
                 }
             }
