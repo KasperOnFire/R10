@@ -213,8 +213,8 @@ public class AI implements BattleshipsPlayer {
                     if (potPos.x > 9 || potPos.x < 0 || potPos.y > 9 || potPos.y < 0) {
                         potentialShipShots.remove(potentialShipShots.indexOf(potPos));
                     }
-                    for (Position posFired : shotsFired) {
-                        if(posFired == potPos){
+                    for (Position firedPos : shotsFired) {
+                        if(firedPos == potPos){
                             potentialShipShots.remove(potentialShipShots.indexOf(potPos));
                         }
                     }
