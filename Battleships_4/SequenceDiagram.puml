@@ -1,0 +1,106 @@
+@startuml
+title Sequence diagram for a single match
+Activate FrameWork
+FrameWork->PlayerA : startMatch
+Deactivate FrameWork
+Activate PlayerA
+FrameWork<--PlayerA : 
+Deactivate PlayerA
+Activate FrameWork
+FrameWork->PlayerB : startMatch
+Deactivate FrameWork
+Activate PlayerB
+FrameWork<--PlayerB :
+Deactivate PlayerB
+loop 1000 times
+    Activate FrameWork
+    FrameWork->PlayerA : startRound
+    Deactivate FrameWork
+    Activate PlayerA
+    FrameWork<--PlayerA :
+    Deactivate PlayerA
+    Activate FrameWork
+    FrameWork->PlayerB : startRound
+    Deactivate FrameWork
+    Activate PlayerB
+    FrameWork<--PlayerB :
+    Deactivate PlayerB
+    Activate FrameWork
+    FrameWork->PlayerA : placeShips
+    Deactivate FrameWork
+    Activate PlayerA
+    FrameWork<--PlayerA :
+    Deactivate PlayerA
+    Activate FrameWork
+    FrameWork->PlayerB : placeShips
+    Deactivate FrameWork
+    Activate PlayerB
+    FrameWork<--PlayerB :
+    Deactivate PlayerB
+    loop until all PlayerA ships are destroyed or all shots fired
+        Activate FrameWork
+        FrameWork->PlayerB : getFireCoordinates
+        Deactivate FrameWork
+        Activate PlayerB
+        FrameWork<--PlayerB : Position
+        Deactivate PlayerB
+        Activate FrameWork
+        FrameWork->PlayerB : hitFeedBack
+        Deactivate FrameWork
+        Activate PlayerB
+        FrameWork<--PlayerB :
+        Deactivate PlayerB
+        Activate FrameWork
+        FrameWork->PlayerA : incoming
+        Deactivate FrameWork
+        Activate PlayerA
+        FrameWork<--PlayerA :
+        Deactivate PlayerA
+    end
+    loop until all PlayerB ships are destroyed or all shots fired
+        Activate FrameWork
+        FrameWork->PlayerA : getFireCoordinates
+        Deactivate FrameWork
+        Activate PlayerA
+        FrameWork<--PlayerA : Position
+        Deactivate PlayerA
+        Activate FrameWork
+        FrameWork->PlayerA : hitFeedBack
+        Deactivate FrameWork
+        Activate PlayerA
+        FrameWork<--PlayerA :
+        Deactivate PlayerA
+        Activate FrameWork
+        FrameWork->PlayerB : incoming
+        Deactivate FrameWork
+        Activate PlayerB
+        FrameWork<--PlayerB :
+        Deactivate PlayerB
+    end
+    Activate FrameWork
+    FrameWork->PlayerA : endRound
+    Deactivate FrameWork
+    Activate PlayerA
+    FrameWork<--PlayerA :
+    Deactivate PlayerA
+    Activate FrameWork
+    FrameWork->PlayerB : endRound
+    Deactivate FrameWork
+    Activate PlayerB
+    FrameWork<--PlayerB :
+    Deactivate PlayerB
+end
+Activate FrameWork
+FrameWork->PlayerA : endMatch
+Deactivate FrameWork
+Activate PlayerA
+FrameWork<--PlayerA :
+Deactivate PlayerA
+Activate FrameWork 
+FrameWork->PlayerB : endMatch
+Deactivate FrameWork
+Activate PlayerB
+FrameWork<--PlayerB :
+Deactivate PlayerB
+Activate FrameWork
+@enduml
