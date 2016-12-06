@@ -47,24 +47,24 @@ public class AI implements BattleshipsPlayer {
         nextY = 0;
         sizeX = board.sizeX();
         sizeY = board.sizeY();
-        
+
         boolean[] vertical = new boolean[5];
         Position[] pos = new Position[5];
         Ship[] s = new Ship[5];
-        
+
         for (int i = 0; i < 5; i++) {
             s[i] = fleet.getShip(i);
         }
-        
+
         ArrayList<String> placementArray = new ArrayList<>(); //Array of cordinates that the current ship ocupie
         HashMap<String, String> map = new HashMap<>(); //hashmap of cordinates ocupied by allready placed ships
-        
-        while(true){ 
+
+        while (true) {
             map.clear(); //clears the map of cordinates in case of a re-run of the loop
             for (int i = 0; i < 5; i++) {
                 int x = 0;
                 int y = 0;
-                while(true){ //runs until ship can be placed without taking up the same space as another ship
+                while (true) { //runs until ship can be placed without taking up the same space as another ship
                     placementArray.clear(); //clears the array if cordinates so it's ready for next ship
                     vertical[i] = rnd.nextBoolean();
 
@@ -77,14 +77,14 @@ public class AI implements BattleshipsPlayer {
                         y = rnd.nextInt(sizeY);
                         pos[i] = new Position(x, y);
                     }
-                    
+
                     for (int j = 0; j <= s[i].size(); j++) { //writes the cordinates to placementArray
                         int tempX = 0;
                         int tempY = 0;
-                        if(vertical[i]){
+                        if (vertical[i]) {
                             tempX = x;
                             tempY = y + j;
-                        }else{
+                        } else {
                             tempX = x + j;
                             tempY = y;
                         }
@@ -92,15 +92,15 @@ public class AI implements BattleshipsPlayer {
                     }
                     boolean retry = false;
                     for (String str : placementArray) {
-                        if(map.containsKey(str)){
+                        if (map.containsKey(str)) {
                             retry = true;
                         }
                     }
-                    if(!retry){
+                    if (!retry) {
                         for (String str : placementArray) {
                             map.put(str, str);
                         }
-                        break; 
+                        break;
                     }
                 }
             }
@@ -109,7 +109,7 @@ public class AI implements BattleshipsPlayer {
         }
 
         for (int i = 0; i < 5; i++) { //place all ships
-            board.placeShip(pos[i], s[i], vertical[i]);   
+            board.placeShip(pos[i], s[i], vertical[i]);
         }
     }
 
