@@ -12,6 +12,8 @@ import battleship.interfaces.Ship;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AI implements BattleshipsPlayer {
 
@@ -19,8 +21,17 @@ public class AI implements BattleshipsPlayer {
     private int sizeX;
     private int sizeY;
 
-    private int nextX;
-    private int nextY;
+    private Position shot;
+
+    private Fleet enemyFleet;
+
+    private int enemyShipCount = 5;
+    private ArrayList<Position> shotsFired = new ArrayList();
+    private ArrayList<Position> potentialShotsWave1 = new ArrayList();
+    private ArrayList<Position> potentialShotsWave2 = new ArrayList();
+    private ArrayList<Position> potentialShipShots = new ArrayList();
+    private ArrayList<Position> shotsHit = new ArrayList();
+    private ArrayList<Position> board = new ArrayList();
 
     public AI() {
     }
@@ -43,8 +54,6 @@ public class AI implements BattleshipsPlayer {
      */
     @Override
     public void placeShips(Fleet fleet, Board board) {
-        nextX = 0;
-        nextY = 0;
         sizeX = board.sizeX();
         sizeY = board.sizeY();
 
@@ -139,16 +148,23 @@ public class AI implements BattleshipsPlayer {
      */
     @Override
     public Position getFireCoordinates(Fleet enemyShips) {
-        Position shot = new Position(nextX, nextY);
-        ++nextX;
-        if (nextX >= sizeX) {
-            nextX = 0;
-            ++nextY;
-            if (nextY >= sizeY) {
-                nextY = 0;
-            }
+        if (!potentialShipShots.isEmpty()) {
+            shot = potentialShipShots.get(rnd.nextInt(potentialShipShots.size()));
+            potentialShipShots.remove(potentialShipShots.indexOf(shot));
+        } else if (!potentialShotsWave1.isEmpty()) {
+            shot = potentialShotsWave1.get(rnd.nextInt(potentialShotsWave1.size()));
+            potentialShotsWave1.remove(potentialShotsWave1.indexOf(shot));
+        } else if (!potentialShotsWave2.isEmpty()) {
+            shot = potentialShotsWave2.get(rnd.nextInt(potentialShotsWave2.size()));
+            potentialShotsWave2.remove(potentialShotsWave2.indexOf(shot));
+        } else {
+            shot = board.get(rnd.nextInt(board.size()));
         }
+
+        shotsFired.add(shot);
+        board.remove(board.indexOf(shot));
         return shot;
+
     }
 
     /**
@@ -163,7 +179,20 @@ public class AI implements BattleshipsPlayer {
      */
     @Override
     public void hitFeedBack(boolean hit, Fleet enemyShips) {
-        //Do nothing
+        enemyFleet = enemyShips;
+        int fleetSize = enemyFleet.getNumberOfShips();
+
+        if (hit) {
+            shotsHit.add(shot);
+            if (fleetSize == enemyShipCount) {
+                addPotentialShots();
+            }
+        }
+        enemyShipCount = fleetSize;
+    }
+
+    private void addPotentialShots() {
+
     }
 
     /**
@@ -184,7 +213,38 @@ public class AI implements BattleshipsPlayer {
      */
     @Override
     public void startRound(int round) {
-        //Do nothing
+        //add potential shots to arraylist
+        Position shot;
+
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                shot = new Position(i, j);
+                board.add(shot);
+
+            }
+        }
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                if (((i + j) % 4 == 0)) {
+                    shot = new Position(i, j);
+                    potentialShotsWave1.add(shot);
+                }
+            }
+        }
+
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                if (((i + j) % 2 == 0)) {
+                    shot = new Position(i, j);
+                    potentialShotsWave2.add(shot);
+                }
+            }
+        }
+        //fjerner dobbeltgængere
+        for (Position pos : potentialShotsWave1) {
+            potentialShotsWave2.remove(potentialShotsWave2.indexOf(pos));
+        }
+
     }
 
     /**
