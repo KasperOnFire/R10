@@ -17,3 +17,5 @@ nb-configuration.xml
 *.properties
 BattleShipsTournament_4/build/classes/battleshipstournament/Loader.class
 *.class
+BattleShipsTournament_4/nbproject/private/private.xml
+*.xml
