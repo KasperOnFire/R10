@@ -12,8 +12,6 @@ import battleship.interfaces.Ship;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class AI implements BattleshipsPlayer {
 
@@ -29,7 +27,7 @@ public class AI implements BattleshipsPlayer {
     private ArrayList<Position> shotsFired = new ArrayList();
     private ArrayList<Position> potentialShotsWave1 = new ArrayList();
     private ArrayList<Position> potentialShotsWave2 = new ArrayList();
-    private ArrayList<Position> potentialShipShots = new ArrayList();
+    private ArrayList<Coordinates> potentialShipShots = new ArrayList();
     private ArrayList<Position> shotsHit = new ArrayList();
     private ArrayList<Position> board = new ArrayList();
 
@@ -148,13 +146,13 @@ public class AI implements BattleshipsPlayer {
      */
     @Override
     public Position getFireCoordinates(Fleet enemyShips) {
-        if (!potentialShipShots.isEmpty()) {
+        if (!potentialShipShots.isEmpty()) { //checks if there is any potential shots. (spaces around a hit)
             shot = potentialShipShots.get(rnd.nextInt(potentialShipShots.size()));
             potentialShipShots.remove(potentialShipShots.indexOf(shot));
-        } else if (!potentialShotsWave1.isEmpty()) {
+        } else if (!potentialShotsWave1.isEmpty()) { // shoots in the specified pattern
             shot = potentialShotsWave1.get(rnd.nextInt(potentialShotsWave1.size()));
             potentialShotsWave1.remove(potentialShotsWave1.indexOf(shot));
-        } else if (!potentialShotsWave2.isEmpty()) {
+        } else if (!potentialShotsWave2.isEmpty()) { //next wave in the pattern
             shot = potentialShotsWave2.get(rnd.nextInt(potentialShotsWave2.size()));
             potentialShotsWave2.remove(potentialShotsWave2.indexOf(shot));
         } else {
@@ -185,14 +183,15 @@ public class AI implements BattleshipsPlayer {
         if (hit) {
             shotsHit.add(shot);
             if (fleetSize == enemyShipCount) {
-                addPotentialShots();
+                addPotentialShots(shot);
             }
         }
         enemyShipCount = fleetSize;
     }
 
-    private void addPotentialShots() {
-
+    private void addPotentialShots(Position shot) {
+        Coordinates coord = new Coordinates(shot);
+        potentialShipShots.add(coord);
     }
 
     /**
