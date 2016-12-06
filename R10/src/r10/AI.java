@@ -12,6 +12,8 @@ import battleship.interfaces.Ship;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AI implements BattleshipsPlayer {
 
@@ -19,8 +21,17 @@ public class AI implements BattleshipsPlayer {
     private int sizeX;
     private int sizeY;
 
-    private int nextX;
-    private int nextY;
+    private Position shot;
+
+    private Fleet enemyFleet;
+
+    private int enemyShipCount = 5;
+    private ArrayList<Position> shotsFired = new ArrayList();
+    private ArrayList<Position> potentialShotsWave1 = new ArrayList();
+    private ArrayList<Position> potentialShotsWave2 = new ArrayList();
+    private ArrayList<Position> potentialShipShots = new ArrayList();
+    private ArrayList<Position> shotsHit = new ArrayList();
+    private ArrayList<Position> board = new ArrayList();
 
     public AI() {
     }
@@ -43,28 +54,26 @@ public class AI implements BattleshipsPlayer {
      */
     @Override
     public void placeShips(Fleet fleet, Board board) {
-        nextX = 0;
-        nextY = 0;
         sizeX = board.sizeX();
         sizeY = board.sizeY();
-        
+
         boolean[] vertical = new boolean[5];
         Position[] pos = new Position[5];
         Ship[] s = new Ship[5];
-        
+
         for (int i = 0; i < 5; i++) {
             s[i] = fleet.getShip(i);
         }
-        
+
         ArrayList<String> placementArray = new ArrayList<>(); //Array of cordinates that the current ship ocupie
         HashMap<String, String> map = new HashMap<>(); //hashmap of cordinates ocupied by allready placed ships
-        
-        while(true){ 
+
+        while (true) {
             map.clear(); //clears the map of cordinates in case of a re-run of the loop
             for (int i = 0; i < 5; i++) {
                 int x = 0;
                 int y = 0;
-                while(true){ //runs until ship can be placed without taking up the same space as another ship
+                while (true) { //runs until ship can be placed without taking up the same space as another ship
                     placementArray.clear(); //clears the array if cordinates so it's ready for next ship
                     vertical[i] = rnd.nextBoolean();
 
@@ -77,14 +86,14 @@ public class AI implements BattleshipsPlayer {
                         y = rnd.nextInt(sizeY);
                         pos[i] = new Position(x, y);
                     }
-                    
+
                     for (int j = 0; j <= s[i].size(); j++) { //writes the cordinates to placementArray
                         int tempX = 0;
                         int tempY = 0;
-                        if(vertical[i]){
+                        if (vertical[i]) {
                             tempX = x;
                             tempY = y + j;
-                        }else{
+                        } else {
                             tempX = x + j;
                             tempY = y;
                         }
@@ -92,15 +101,15 @@ public class AI implements BattleshipsPlayer {
                     }
                     boolean retry = false;
                     for (String str : placementArray) {
-                        if(map.containsKey(str)){
+                        if (map.containsKey(str)) {
                             retry = true;
                         }
                     }
-                    if(!retry){
+                    if (!retry) {
                         for (String str : placementArray) {
                             map.put(str, str);
                         }
-                        break; 
+                        break;
                     }
                 }
             }
@@ -109,7 +118,7 @@ public class AI implements BattleshipsPlayer {
         }
 
         for (int i = 0; i < 5; i++) { //place all ships
-            board.placeShip(pos[i], s[i], vertical[i]);   
+            board.placeShip(pos[i], s[i], vertical[i]);
         }
     }
 
@@ -139,16 +148,23 @@ public class AI implements BattleshipsPlayer {
      */
     @Override
     public Position getFireCoordinates(Fleet enemyShips) {
-        Position shot = new Position(nextX, nextY);
-        ++nextX;
-        if (nextX >= sizeX) {
-            nextX = 0;
-            ++nextY;
-            if (nextY >= sizeY) {
-                nextY = 0;
-            }
+        if (!potentialShipShots.isEmpty()) {
+            shot = potentialShipShots.get(rnd.nextInt(potentialShipShots.size()));
+            potentialShipShots.remove(potentialShipShots.indexOf(shot));
+        } else if (!potentialShotsWave1.isEmpty()) {
+            shot = potentialShotsWave1.get(rnd.nextInt(potentialShotsWave1.size()));
+            potentialShotsWave1.remove(potentialShotsWave1.indexOf(shot));
+        } else if (!potentialShotsWave2.isEmpty()) {
+            shot = potentialShotsWave2.get(rnd.nextInt(potentialShotsWave2.size()));
+            potentialShotsWave2.remove(potentialShotsWave2.indexOf(shot));
+        } else {
+            shot = board.get(rnd.nextInt(board.size()));
         }
+
+        shotsFired.add(shot);
+        board.remove(board.indexOf(shot));
         return shot;
+
     }
 
     /**
@@ -163,7 +179,20 @@ public class AI implements BattleshipsPlayer {
      */
     @Override
     public void hitFeedBack(boolean hit, Fleet enemyShips) {
-        //Do nothing
+        enemyFleet = enemyShips;
+        int fleetSize = enemyFleet.getNumberOfShips();
+
+        if (hit) {
+            shotsHit.add(shot);
+            if (fleetSize == enemyShipCount) {
+                addPotentialShots();
+            }
+        }
+        enemyShipCount = fleetSize;
+    }
+
+    private void addPotentialShots() {
+
     }
 
     /**
@@ -184,7 +213,38 @@ public class AI implements BattleshipsPlayer {
      */
     @Override
     public void startRound(int round) {
-        //Do nothing
+        //add potential shots to arraylist
+        Position shot;
+
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                shot = new Position(i, j);
+                board.add(shot);
+
+            }
+        }
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                if (((i + j) % 4 == 0)) {
+                    shot = new Position(i, j);
+                    potentialShotsWave1.add(shot);
+                }
+            }
+        }
+
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                if (((i + j) % 2 == 0)) {
+                    shot = new Position(i, j);
+                    potentialShotsWave2.add(shot);
+                }
+            }
+        }
+        //fjerner dobbeltgængere
+        for (Position pos : potentialShotsWave1) {
+            potentialShotsWave2.remove(potentialShotsWave2.indexOf(pos));
+        }
+
     }
 
     /**
