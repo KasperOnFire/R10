@@ -14,3 +14,9 @@ nb-configuration.xml
 *.jar
 *.war
 *.ear
+/BattleShipsTournament_4/nbproject/private/
+/Battleships_4/nbproject/private/
+/E1/nbproject/private/
+/E2/nbproject/private/
+/R10/nbproject/private/
+/Tournament_4/nbproject/private/
