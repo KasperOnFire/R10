@@ -12,8 +12,6 @@ import battleship.interfaces.Ship;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class AI implements BattleshipsPlayer {
 
@@ -148,13 +146,13 @@ public class AI implements BattleshipsPlayer {
      */
     @Override
     public Position getFireCoordinates(Fleet enemyShips) {
-        if (!potentialShipShots.isEmpty()) {
-            shot = potentialShipShots.get(rnd.nextInt(potentialShipShots.size()));
-            potentialShipShots.remove(potentialShipShots.indexOf(shot));
-        } else if (!potentialShotsWave1.isEmpty()) {
+        if (!potentialShipShots.isEmpty()) { //checks if there is any potential shots. (spaces around a hit)
+            shot = shootPotential(shot);
+            potentialShipShots.remove(shot);
+        } else if (!potentialShotsWave1.isEmpty()) { // shoots in the specified pattern
             shot = potentialShotsWave1.get(rnd.nextInt(potentialShotsWave1.size()));
             potentialShotsWave1.remove(potentialShotsWave1.indexOf(shot));
-        } else if (!potentialShotsWave2.isEmpty()) {
+        } else if (!potentialShotsWave2.isEmpty()) { //next wave in the pattern
             shot = potentialShotsWave2.get(rnd.nextInt(potentialShotsWave2.size()));
             potentialShotsWave2.remove(potentialShotsWave2.indexOf(shot));
         } else {
@@ -165,6 +163,30 @@ public class AI implements BattleshipsPlayer {
         board.remove(board.indexOf(shot));
         return shot;
 
+    }
+
+    private Position shootPotential(Position shot) {
+        Coordinates shotCoord = new Coordinates(shot);
+        Position returnShot;
+
+        if (shotCoord.getPosUp() != null) {
+            returnShot = shotCoord.getPosUp();
+            shotCoord.removePosUp();
+            return returnShot;
+        } else if (shotCoord.getPosDown() != null) {
+            returnShot = shotCoord.getPosDown();
+            shotCoord.removePosDown();
+            return returnShot;
+        } else if (shotCoord.getPosLeft() != null) {
+            returnShot = shotCoord.getPosLeft();
+            shotCoord.removePosLeft();
+            return returnShot;
+        } else if (shotCoord.getPosRight() != null) {
+            returnShot = shotCoord.getPosRight();
+            shotCoord.removePosRight();
+            return returnShot;
+        }
+        return null;
     }
 
     /**
@@ -182,17 +204,23 @@ public class AI implements BattleshipsPlayer {
         enemyFleet = enemyShips;
         int fleetSize = enemyFleet.getNumberOfShips();
 
+        Coordinates infoShot = new Coordinates(shot);
+
         if (hit) {
             shotsHit.add(shot);
             if (fleetSize == enemyShipCount) {
-                addPotentialShots();
+                potentialShipShots.add(infoShot.getPosUp());
+                potentialShipShots.add(infoShot.getPosDown());
+                potentialShipShots.add(infoShot.getPosLeft());
+                potentialShipShots.add(infoShot.getPosRight());
+                for (Position potPos : potentialShipShots) {
+                    if (potPos.x > 9 || potPos.x < 0 || potPos.y > 9 || potPos.y < 0) {
+                        potentialShipShots.remove(potPos);
+                    }
+                }
             }
         }
         enemyShipCount = fleetSize;
-    }
-
-    private void addPotentialShots() {
-
     }
 
     /**
