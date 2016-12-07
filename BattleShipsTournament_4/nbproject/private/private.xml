@@ -9,6 +9,9 @@
         <group name="BattleshipsV3">
             <file>file:/C:/Users/Tobias%20Grundtvig/Google%20Drive/CBA/E2015/1.Sem/BattleshipsV3/BattleShipsTournament%203.0/src/battleshipstournament/FinalTournament.java</file>
         </group>
-        <group/>
+        <group>
+            <file>file:/C:/Users/david/Documents/NetBeansProjects/R10/BattleShipsTournament_4/src/battleshipstournament/SingleRoundVisualizer.java</file>
+            <file>file:/C:/Users/david/Documents/NetBeansProjects/R10/BattleShipsTournament_4/src/battleshipstournament/SingleMatchVisualizer.java</file>
+        </group>
     </open-files>
 </project-private>
