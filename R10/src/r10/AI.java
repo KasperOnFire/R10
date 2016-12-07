@@ -212,11 +212,6 @@ public class AI implements BattleshipsPlayer {
 
         Coordinates infoShot = new Coordinates(shot);
         
-        /*if(enemyShipCount < fleetSize){
-            potentialShipShots.clear();
-            return;
-        }*/
-        
         if (hit) {
             shotsHit.add(shot);
             if (fleetSize == enemyShipCount) {
