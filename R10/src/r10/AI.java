@@ -14,11 +14,10 @@ public class AI implements BattleshipsPlayer {
     private final static Random rnd = new Random();
     private int sizeX;
     private int sizeY;
-    
+
     private int scoreMax = 0;
     private int scoreMin = 100;
     private int totalShotsFired = 0;
-    
 
     private Position shot;
 
@@ -115,7 +114,6 @@ public class AI implements BattleshipsPlayer {
             //check if okay else try again
             break;
         }
-
         for (int i = 0; i < 5; i++) { //place all ships
             board.placeShip(pos[i], s[i], vertical[i]);
         }
@@ -163,13 +161,13 @@ public class AI implements BattleshipsPlayer {
 
         shotsFired.add(shot);
         board.remove(board.indexOf(shot));
-        System.out.println("PotShipShots: "+potentialShipShots.size());
-        System.out.println("Wave1: "+potentialShotsWave1.size());
-        System.out.println("wave2: "+potentialShotsWave2.size());
-        System.out.println("Shot at x: " + shot.x + " y: " + shot.y); 
+        System.out.println("PotShipShots: " + potentialShipShots.size());
+        System.out.println("Wave1: " + potentialShotsWave1.size());
+        System.out.println("wave2: " + potentialShotsWave2.size());
+        System.out.println("Shot at x: " + shot.x + " y: " + shot.y);
         return shot;
     }
-    
+
     //not used
     private Position shootPotential(Position shot) {
         Coordinates shotCoord = new Coordinates(shot);
@@ -211,7 +209,7 @@ public class AI implements BattleshipsPlayer {
         int fleetSize = enemyFleet.getNumberOfShips();
 
         Coordinates infoShot = new Coordinates(shot);
-        
+
         if (hit) {
             shotsHit.add(shot);
             if (fleetSize == enemyShipCount) {
@@ -224,17 +222,17 @@ public class AI implements BattleshipsPlayer {
                         potentialShipShots.remove(potentialShipShots.indexOf(potPos));
                     }
                     for (Position firedPos : shotsFired) {
-                        if(firedPos == potPos){
+                        if (firedPos == potPos) {
                             potentialShipShots.remove(potentialShipShots.indexOf(potPos));
                         }
                     }
-                    for (int i = 0; i < potentialShotsWave1.size();i++) {
-                        if(potPos == potentialShotsWave1.get(i)){
+                    for (int i = 0; i < potentialShotsWave1.size(); i++) {
+                        if (potPos == potentialShotsWave1.get(i)) {
                             potentialShotsWave1.remove(i);
                         }
                     }
-                    for (int i = 0; i < potentialShotsWave2.size();i++) {
-                        if(potPos == potentialShotsWave2.get(i)){
+                    for (int i = 0; i < potentialShotsWave2.size(); i++) {
+                        if (potPos == potentialShotsWave2.get(i)) {
                             potentialShotsWave2.remove(i);
                         }
                     }
@@ -264,14 +262,14 @@ public class AI implements BattleshipsPlayer {
     public void startRound(int round) {
         //add potential shots to arraylist
         Position shot;
-        
+
         board.clear();
         shotsFired.clear();
         shotsHit.clear();
         potentialShipShots.clear();
         potentialShotsWave1.clear();
         potentialShotsWave2.clear();
-        
+
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
                 shot = new Position(i, j);
@@ -315,16 +313,16 @@ public class AI implements BattleshipsPlayer {
      */
     @Override
     public void endRound(int round, int points, int enemyPoints) {
-        if(points > scoreMax){
-            scoreMax = points;            
+        if (points > scoreMax) {
+            scoreMax = points;
         }
-        if(points < scoreMin){
-            scoreMin = points;            
+        if (points < scoreMin) {
+            scoreMin = points;
         }
         /*if(points == 100){
             System.exit(0);
         }*/
-        totalShotsFired += 100-points;
+        totalShotsFired += 100 - points;
     }
 
     /**
@@ -337,10 +335,10 @@ public class AI implements BattleshipsPlayer {
      */
     @Override
     public void endMatch(int won, int lost, int draw) {
-        System.out.println("Max score: "+ scoreMax);
-        System.out.println("Min score: "+ scoreMin);
-        System.out.println("Total Shots: "+ totalShotsFired);
-        System.out.println("Avg: "+ totalShotsFired/(won+lost+draw));
-        
+        System.out.println("Max score: " + scoreMax);
+        System.out.println("Min score: " + scoreMin);
+        System.out.println("Total Shots: " + totalShotsFired);
+        System.out.println("Avg: " + totalShotsFired / (won + lost + draw));
+
     }
 }
