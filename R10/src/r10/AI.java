@@ -27,6 +27,8 @@ public class AI implements BattleshipsPlayer {
     private ArrayList<Position> shotsHit = new ArrayList();
     private ArrayList<Position> board = new ArrayList();
 
+    private ArrayList<Position> enemyShotsFired = new ArrayList<>();
+
     public AI() {
     }
 
@@ -126,8 +128,8 @@ public class AI implements BattleshipsPlayer {
      */
     @Override
     public void incoming(Position pos) {
+        enemyShotsFired.add(pos);
 
-        //Do nothing
     }
 
     /**
@@ -214,7 +216,7 @@ public class AI implements BattleshipsPlayer {
                         potentialShipShots.remove(potentialShipShots.indexOf(potPos));
                     }
                     for (Position firedPos : shotsFired) {
-                        if(firedPos == potPos){
+                        if (firedPos == potPos) {
                             potentialShipShots.remove(potentialShipShots.indexOf(potPos));
                         }
                     }
