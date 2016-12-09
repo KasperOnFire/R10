@@ -14,8 +14,8 @@ public class SingleMatchVisualizer
     {
         /*******  OVERWRITE AI HERE (with your own):  *******/
         //PlayerFactory<BattleshipsPlayer> playerAFactory = Loader.loadPlayer("D:\\BattleshipsTest\\R4.jar", "r4.R4");
-        PlayerFactory<BattleshipsPlayer> playerAFactory = Loader.loadPlayer("../AIjars/E1.jar", "e1.E1");
-        PlayerFactory<BattleshipsPlayer> playerBFactory = Loader.loadPlayer("../AIjars/E2.jar", "e2.E2");
+        PlayerFactory<BattleshipsPlayer> playerAFactory = Loader.loadPlayer("../AIjars/E2.jar", "e2.E2");
+        PlayerFactory<BattleshipsPlayer> playerBFactory = Loader.loadPlayer("../AIjars/R10.jar", "r10.R10");
           
         runGame(playerAFactory, playerBFactory, 100);
     }

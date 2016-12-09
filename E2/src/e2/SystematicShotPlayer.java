@@ -9,6 +9,8 @@ import battleship.interfaces.Fleet;
 import battleship.interfaces.Position;
 import battleship.interfaces.Board;
 import battleship.interfaces.Ship;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 /**
@@ -17,59 +19,113 @@ import java.util.Random;
  */
 public class SystematicShotPlayer implements BattleshipsPlayer
 {
+    private int nextX;
+    private int nextY;
+
     private final static Random rnd = new Random();
     private int sizeX;
     private int sizeY;
     
-    private int nextX;
-    private int nextY;
+    private int scoreMax = 0;
+    private int scoreMin = 100;
+    private int totalShotsFired = 0;
 
-    public SystematicShotPlayer()
-    {
-    }
-    
-    
+    private Position shot;
+
+    private Fleet enemyFleet;
+
+    private int enemyShipCount = 5;
+    private ArrayList<Position> shotsFired = new ArrayList();
+    private ArrayList<Position> potentialShotsWave1 = new ArrayList();
+    private ArrayList<Position> potentialShotsWave2 = new ArrayList();
+    private ArrayList<Position> potentialShipShots = new ArrayList();
+    private ArrayList<Position> shotsHit = new ArrayList();
+    private ArrayList<Position> board = new ArrayList();
+
+
     /**
-     * The method called when its time for the AI to place ships on the board 
+     * The method called when its time for the AI to place ships on the board
      * (at the beginning of each round).
-     * 
-     * The Ship object to be placed  MUST be taken from the Fleet given 
-     * (do not create your own Ship objects!).
-     * 
-     * A ship is placed by calling the board.placeShip(..., Ship ship, ...) 
-     * for each ship in the fleet (see board interface for details on placeShip()).
-     * 
-     * A player is not required to place all the ships. 
-     * Ships placed outside the board or on top of each other are wrecked.
-     * 
-     * @param fleet Fleet all the ships that a player should place. 
+     *
+     * The Ship object to be placed MUST be taken from the Fleet given (do not
+     * create your own Ship objects!).
+     *
+     * A ship is placed by calling the board.placeShip(..., Ship ship, ...) for
+     * each ship in the fleet (see board interface for details on placeShip()).
+     *
+     * A player is not required to place all the ships. Ships placed outside the
+     * board or on top of each other are wrecked.
+     *
+     * @param fleet Fleet all the ships that a player should place.
      * @param board Board the board were the ships must be placed.
      */
     @Override
-    public void placeShips(Fleet fleet, Board board)
-    {
-        nextX = 0;
-        nextY = 0;
+    public void placeShips(Fleet fleet, Board board) {
         sizeX = board.sizeX();
         sizeY = board.sizeY();
-        for(int i = 0; i < fleet.getNumberOfShips(); ++i)
-        {
-            Ship s = fleet.getShip(i);
-            boolean vertical = rnd.nextBoolean();
-            Position pos;
-            if(vertical)
-            {
-                int x = rnd.nextInt(sizeX);
-                int y = rnd.nextInt(sizeY-(s.size()-1));
-                pos = new Position(x, y);
+
+        boolean[] vertical = new boolean[5];
+        Position[] pos = new Position[5];
+        Ship[] s = new Ship[5];
+
+        for (int i = 0; i < 5; i++) {
+            s[i] = fleet.getShip(i);
+        }
+
+        ArrayList<String> placementArray = new ArrayList<>(); //Array of cordinates that the current ship ocupie
+        HashMap<String, String> map = new HashMap<>(); //hashmap of cordinates ocupied by allready placed ships
+
+        while (true) {
+            map.clear(); //clears the map of cordinates in case of a re-run of the loop
+            for (int i = 0; i < 5; i++) {
+                int x = 0;
+                int y = 0;
+                while (true) { //runs until ship can be placed without taking up the same space as another ship
+                    placementArray.clear(); //clears the array if cordinates so it's ready for next ship
+                    vertical[i] = rnd.nextBoolean();
+
+                    if (vertical[i]) {
+                        x = rnd.nextInt(sizeX);
+                        y = rnd.nextInt(sizeY - s[i].size() - 1);
+                        pos[i] = new Position(x, y);
+                    } else {
+                        x = rnd.nextInt(sizeX - (fleet.getShip(i).size() - 1));
+                        y = rnd.nextInt(sizeY);
+                        pos[i] = new Position(x, y);
+                    }
+
+                    for (int j = 0; j <= s[i].size(); j++) { //writes the cordinates to placementArray
+                        int tempX = 0;
+                        int tempY = 0;
+                        if (vertical[i]) {
+                            tempX = x;
+                            tempY = y + j;
+                        } else {
+                            tempX = x + j;
+                            tempY = y;
+                        }
+                        placementArray.add(tempX + "," + tempY);
+                    }
+                    boolean retry = false;
+                    for (String str : placementArray) {
+                        if (map.containsKey(str)) {
+                            retry = true;
+                        }
+                    }
+                    if (!retry) {
+                        for (String str : placementArray) {
+                            map.put(str, str);
+                        }
+                        break;
+                    }
+                }
             }
-            else
-            {
-                int x = rnd.nextInt(sizeX-(s.size()-1));
-                int y = rnd.nextInt(sizeY);
-                pos = new Position(x, y);
-            }
-            board.placeShip(pos, s, vertical);
+            //check if okay else try again
+            break;
+        }
+
+        for (int i = 0; i < 5; i++) { //place all ships
+            board.placeShip(pos[i], s[i], vertical[i]);
         }
     }
     
