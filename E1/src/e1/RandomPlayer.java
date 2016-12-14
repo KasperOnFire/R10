@@ -19,27 +19,13 @@ import java.util.Random;
  */
 public class RandomPlayer implements BattleshipsPlayer
 {
-    private int nextX;
-    private int nextY;
-
     private final static Random rnd = new Random();
     private int sizeX;
     private int sizeY;
-    
-    private int scoreMax = 0;
-    private int scoreMin = 100;
-    private int totalShotsFired = 0;
 
     private Position shot;
 
-    private Fleet enemyFleet;
-
-    private int enemyShipCount = 5;
     private HashMap<String, String> shotsFired = new HashMap();
-    private ArrayList<Position> potentialShotsWave1 = new ArrayList();
-    private ArrayList<Position> potentialShotsWave2 = new ArrayList();
-    private ArrayList<Position> potentialShipShots = new ArrayList();
-    private ArrayList<Position> shotsHit = new ArrayList();
     private ArrayList<Position> board = new ArrayList();
 
 

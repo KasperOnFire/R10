@@ -1,5 +1,5 @@
 package r10;
-
+ 
 import battleship.interfaces.BattleshipsPlayer;
 import battleship.interfaces.Fleet;
 import battleship.interfaces.Position;
@@ -8,21 +8,28 @@ import battleship.interfaces.Ship;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
-
+ 
 public class AI implements BattleshipsPlayer {
-
+ 
     private final static Random rnd = new Random();
     private int sizeX;
     private int sizeY;
-
+   
     private int scoreMax = 0;
     private int scoreMin = 100;
     private int totalShotsFired = 0;
-
+    private int amountOfShots = 1;
+   
+    private boolean findRest = false;
+   
     private Position shot;
-
+    private Position lasthit = new Position(0, 0);
+    private Position calculateHit;// = new Position(0, 0);
+ 
     private Fleet enemyFleet;
-
+   
+   
+    private int hits = 0;
     private int enemyShipCount = 5;
     private ArrayList<Position> shotsFired = new ArrayList();
     private ArrayList<Position> potentialShotsWave1 = new ArrayList();
@@ -30,10 +37,10 @@ public class AI implements BattleshipsPlayer {
     private ArrayList<Position> potentialShipShots = new ArrayList();
     private ArrayList<Position> shotsHit = new ArrayList();
     private ArrayList<Position> board = new ArrayList();
-
+ 
     public AI() {
     }
-
+ 
     /**
      * The method called when its time for the AI to place ships on the board
      * (at the beginning of each round).
@@ -54,18 +61,18 @@ public class AI implements BattleshipsPlayer {
     public void placeShips(Fleet fleet, Board board) {
         sizeX = board.sizeX();
         sizeY = board.sizeY();
-
+ 
         boolean[] vertical = new boolean[5];
         Position[] pos = new Position[5];
         Ship[] s = new Ship[5];
-
+ 
         for (int i = 0; i < 5; i++) {
             s[i] = fleet.getShip(i);
         }
-
+ 
         ArrayList<String> placementArray = new ArrayList<>(); //Array of cordinates that the current ship ocupie
         HashMap<String, String> map = new HashMap<>(); //hashmap of cordinates ocupied by allready placed ships
-
+ 
         while (true) {
             map.clear(); //clears the map of cordinates in case of a re-run of the loop
             for (int i = 0; i < 5; i++) {
@@ -74,7 +81,7 @@ public class AI implements BattleshipsPlayer {
                 while (true) { //runs until ship can be placed without taking up the same space as another ship
                     placementArray.clear(); //clears the array if cordinates so it's ready for next ship
                     vertical[i] = rnd.nextBoolean();
-
+ 
                     if (vertical[i]) {
                         x = rnd.nextInt(sizeX);
                         y = rnd.nextInt(sizeY - s[i].size() - 1);
@@ -84,7 +91,7 @@ public class AI implements BattleshipsPlayer {
                         y = rnd.nextInt(sizeY);
                         pos[i] = new Position(x, y);
                     }
-
+ 
                     for (int j = 0; j <= s[i].size(); j++) { //writes the cordinates to placementArray
                         int tempX = 0;
                         int tempY = 0;
@@ -114,11 +121,12 @@ public class AI implements BattleshipsPlayer {
             //check if okay else try again
             break;
         }
+ 
         for (int i = 0; i < 5; i++) { //place all ships
             board.placeShip(pos[i], s[i], vertical[i]);
         }
     }
-
+ 
     /**
      * Called every time the enemy has fired a shot.
      *
@@ -129,10 +137,10 @@ public class AI implements BattleshipsPlayer {
      */
     @Override
     public void incoming(Position pos) {
-
+ 
         //Do nothing
     }
-
+ 
     /**
      * Called by the Game application to get the Position of your shot.
      * hitFeedBack(...) is called right after this method.
@@ -146,33 +154,41 @@ public class AI implements BattleshipsPlayer {
     @Override
     public Position getFireCoordinates(Fleet enemyShips) {
         if (!potentialShipShots.isEmpty()) { //checks if there is any potential shots. (spaces around a hit)
-            //shot = shootPotential(shot);
             shot = potentialShipShots.get(rnd.nextInt(potentialShipShots.size()));
             potentialShipShots.remove(shot);
+            findRest = true;
         } else if (!potentialShotsWave1.isEmpty()) { // shoots in the specified pattern
             shot = potentialShotsWave1.get(rnd.nextInt(potentialShotsWave1.size()));
             potentialShotsWave1.remove(potentialShotsWave1.indexOf(shot));
+            findRest = false;
         } else if (!potentialShotsWave2.isEmpty()) { //next wave in the pattern
             shot = potentialShotsWave2.get(rnd.nextInt(potentialShotsWave2.size()));
             potentialShotsWave2.remove(potentialShotsWave2.indexOf(shot));
+            findRest = false;
         } else {
             shot = board.get(rnd.nextInt(board.size()));
+            findRest = false;
         }
-
+ 
+        //FIX DEN SKYDER DEN SAMME POS
+       
         shotsFired.add(shot);
-        board.remove(board.indexOf(shot));
         System.out.println("PotShipShots: " + potentialShipShots.size());
+        for (Position potShip : potentialShipShots) {
+            System.out.println("X: " + potShip.x + " Y: " + potShip.y);
+        }
         System.out.println("Wave1: " + potentialShotsWave1.size());
         System.out.println("wave2: " + potentialShotsWave2.size());
-        System.out.println("Shot at x: " + shot.x + " y: " + shot.y);
+        System.out.println("O'Shit: " + board.size());
+        System.out.println("Shot at x: " + shot.x + " y: " + shot.y);        
         return shot;
     }
-
+   
     //not used
     private Position shootPotential(Position shot) {
         Coordinates shotCoord = new Coordinates(shot);
         Position returnShot;
-
+ 
         if (shotCoord.getPosUp() != null) {
             returnShot = shotCoord.getPosUp();
             shotCoord.removePosUp();
@@ -192,7 +208,18 @@ public class AI implements BattleshipsPlayer {
         }
         return null;
     }
-
+   
+    private Position randomStartShoot(){
+        while(true){
+            shot = potentialShotsWave1.get(rnd.nextInt(potentialShotsWave1.size()));
+            if(shot.x < 2 && shot.x > 7 && shot.y < 2 && shot.y > 7){
+                potentialShotsWave1.remove(potentialShotsWave1.indexOf(shot));
+                break;
+            }
+        }
+        return shot;
+    }
+ 
     /**
      * Called right after getFireCoordinates(...) to let your AI know if you hit
      * something or not.
@@ -203,7 +230,6 @@ public class AI implements BattleshipsPlayer {
      * @param hit boolean is true if your last shot hit a ship. False otherwise.
      * @param enemyShips Fleet the enemy's ships.
      */
-    @Override
     public void hitFeedBack(boolean hit, Fleet enemyShips) {
         enemyFleet = enemyShips;
         int fleetSize = enemyFleet.getNumberOfShips();
@@ -241,7 +267,44 @@ public class AI implements BattleshipsPlayer {
         }
         enemyShipCount = fleetSize;
     }
-
+   
+        public void cleanShots(){
+            for (Position potPos : potentialShipShots) {
+                if (potPos.x > 9 || potPos.x < 0 || potPos.y > 9 || potPos.y < 0) {
+                    potentialShipShots.remove(potentialShipShots.indexOf(potPos));
+                        System.out.println("Removed OM pos: " + potPos);
+                }
+                for (Position firedPos : shotsFired) {
+                    if(firedPos.x == potPos.x && firedPos.y == potPos.y){
+                        potentialShipShots.remove(potentialShipShots.indexOf(potPos));
+                        System.out.println("Removed AS pos: " + potPos);
+                    }
+                }
+                for (Position wave1Pos : potentialShotsWave1) {
+                    if (potPos.x == wave1Pos.x && potPos.y == wave1Pos.y) {
+                        System.out.println("pik999");
+                        potentialShotsWave1.remove(potentialShotsWave1.indexOf(potPos));
+                        System.out.println("Removed W1 pos: " + potPos);
+                    }
+                }
+ 
+                for (Position wave2Pos : potentialShotsWave2) {
+                    if (potPos.x == wave2Pos.x && potPos.y == wave2Pos.y) {
+                        System.out.println("pik888");
+                        potentialShotsWave2.remove(potentialShotsWave2.indexOf(potPos));
+                        System.out.println("Removed W2 pos: " + potPos);
+                    }
+                }
+ 
+                for (Position boardP : board) {
+                    if (potPos.equals(boardP)) {
+                        board.remove(board.indexOf(potPos));
+                        System.out.println("Removed boardP pos: " + potPos);
+                    }
+                }
+            }
+        }
+ 
     /**
      * Called in the beginning of each match to inform about the number of
      * rounds being played.
@@ -252,7 +315,7 @@ public class AI implements BattleshipsPlayer {
     public void startMatch(int rounds, Fleet ships, int sizeX, int sizeY) {
         //Do nothing...
     }
-
+ 
     /**
      * Called at the beginning of each round.
      *
@@ -262,19 +325,20 @@ public class AI implements BattleshipsPlayer {
     public void startRound(int round) {
         //add potential shots to arraylist
         Position shot;
-
+       
+        hits = 0;
         board.clear();
         shotsFired.clear();
         shotsHit.clear();
         potentialShipShots.clear();
         potentialShotsWave1.clear();
         potentialShotsWave2.clear();
-
+       
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
                 shot = new Position(i, j);
                 board.add(shot);
-
+ 
             }
         }
         for (int i = 0; i < 10; i++) {
@@ -285,7 +349,7 @@ public class AI implements BattleshipsPlayer {
                 }
             }
         }
-
+ 
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
                 if (((i + j) % 2 == 0)) {
@@ -298,9 +362,14 @@ public class AI implements BattleshipsPlayer {
         for (Position pos : potentialShotsWave1) {
             potentialShotsWave2.remove(potentialShotsWave2.indexOf(pos));
         }
-
+       
+        for (Position boardShotsRemove : board) {
+            board.remove(potentialShotsWave2.indexOf(boardShotsRemove));
+            board.remove(potentialShotsWave1.indexOf(boardShotsRemove));
+        }
+ 
     }
-
+ 
     /**
      * Called at the end of each round to let you know if you won or lost.
      * Compare your points with the enemy's to see who won.
@@ -313,18 +382,24 @@ public class AI implements BattleshipsPlayer {
      */
     @Override
     public void endRound(int round, int points, int enemyPoints) {
-        if (points > scoreMax) {
-            scoreMax = points;
+        if(points > scoreMax){
+            scoreMax = points;            
         }
-        if (points < scoreMin) {
-            scoreMin = points;
+        if(points < scoreMin){
+            scoreMin = points;            
+        }
+       
+        if(enemyPoints > points){
+            System.out.println("Enemy win!");
+        }else{
+            System.out.println("Player win!");
         }
         /*if(points == 100){
             System.exit(0);
         }*/
-        totalShotsFired += 100 - points;
+        totalShotsFired += 100-points;
     }
-
+ 
     /**
      * Called at the end of a match (that usually last 1000 rounds) to let you
      * know how many losses, victories and draws you scored.
@@ -335,10 +410,10 @@ public class AI implements BattleshipsPlayer {
      */
     @Override
     public void endMatch(int won, int lost, int draw) {
-        System.out.println("Max score: " + scoreMax);
-        System.out.println("Min score: " + scoreMin);
-        System.out.println("Total Shots: " + totalShotsFired);
-        System.out.println("Avg: " + totalShotsFired / (won + lost + draw));
-
+        System.out.println("Max score: "+ scoreMax);
+        System.out.println("Min score: "+ scoreMin);
+        System.out.println("Total Shots: "+ totalShotsFired);
+        System.out.println("Avg: "+ totalShotsFired/(won+lost+draw));
+       
     }
 }
