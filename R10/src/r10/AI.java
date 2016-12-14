@@ -38,6 +38,7 @@ public class AI implements BattleshipsPlayer {
     private ArrayList<Position> shotsHit = new ArrayList();
     private ArrayList<Position> board = new ArrayList();
  
+
     public AI() {
     }
  
@@ -137,8 +138,10 @@ public class AI implements BattleshipsPlayer {
      */
     @Override
     public void incoming(Position pos) {
+
  
         //Do nothing
+
     }
  
     /**
