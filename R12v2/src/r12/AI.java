@@ -1,8 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-package e1;
+package r12;
 
 import battleship.interfaces.BattleshipsPlayer;
 import battleship.interfaces.Fleet;
@@ -13,20 +9,30 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
-/**
- *
- * @author Tobias
- */
-public class RandomPlayer implements BattleshipsPlayer {
+public class AI implements BattleshipsPlayer {
 
     private final static Random rnd = new Random();
     private int sizeX;
     private int sizeY;
 
+    private int scoreMax = 0;
+    private int scoreMin = 100;
+    private int totalShotsFired = 0;
+
     private Position shot;
 
-    private HashMap<String, String> shotsFired = new HashMap();
-    private ArrayList<Position> board = new ArrayList();
+    private Fleet enemyFleet;
+
+    private int[][] enemyBoard = new int[sizeX][sizeX];
+    private int[][] boardHeatMap = new int[sizeX][sizeX];
+    private int[] ships = {1, 2, 1, 1};
+
+    private ArrayList<String> placementArray = new ArrayList<>(); //Array of cordinates that the current ship ocupie
+    private ArrayList<String> cantPlaceArray = new ArrayList<>(); //Array of cordinates that the current ship ocupie
+    private HashMap<String, String> map = new HashMap<>(); //hashmap of cordinates ocupied by allready placed ships
+
+    public AI() {
+    }
 
     /**
      * The method called when its time for the AI to place ships on the board
@@ -57,9 +63,6 @@ public class RandomPlayer implements BattleshipsPlayer {
             s[i] = fleet.getShip(i);
         }
 
-        ArrayList<String> placementArray = new ArrayList<>(); //Array of cordinates that the current ship ocupie
-        HashMap<String, String> map = new HashMap<>(); //hashmap of cordinates ocupied by allready placed ships
-
         while (true) {
             map.clear(); //clears the map of cordinates in case of a re-run of the loop
             for (int i = 0; i < 5; i++) {
@@ -74,26 +77,36 @@ public class RandomPlayer implements BattleshipsPlayer {
                         y = rnd.nextInt(sizeY - s[i].size() - 1);
                         pos[i] = new Position(x, y);
                     } else {
-                        x = rnd.nextInt(sizeX - (fleet.getShip(i).size() - 1));
+                        x = rnd.nextInt(sizeX - s[i].size() - 1);
                         y = rnd.nextInt(sizeY);
                         pos[i] = new Position(x, y);
                     }
 
-                    for (int j = 0; j <= s[i].size(); j++) { //writes the cordinates to placementArray
+                    for (int j = 0; j <= s[i].size() + 2; j++) { //writes the cordinates to placementArray
                         int tempX = 0;
                         int tempY = 0;
+
                         if (vertical[i]) {
                             tempX = x;
-                            tempY = y + j;
+                            tempY = y + j - 1;
+                            //Creds Maria
+                            addAroundVert(s[i].size(), tempX, tempY);
+
                         } else {
-                            tempX = x + j;
+                            tempX = x + j - 1;
                             tempY = y;
+                            //Creds Maria
+                            addAroundHoriz(s[i].size(), tempX, tempY);
+
                         }
                         placementArray.add(tempX + "," + tempY);
                     }
                     boolean retry = false;
                     for (String str : placementArray) {
                         if (map.containsKey(str)) {
+                            retry = true;
+                        }
+                        if (cantPlaceArray.contains(str)) {
                             retry = true;
                         }
                     }
@@ -108,9 +121,66 @@ public class RandomPlayer implements BattleshipsPlayer {
             //check if okay else try again
             break;
         }
-
         for (int i = 0; i < 5; i++) { //place all ships
             board.placeShip(pos[i], s[i], vertical[i]);
+        }
+    }
+
+    //Creds til Maria
+    private void addAroundVert(int size, int x, int y) {
+        int tempX = x;
+        int tempY = y;
+
+        //place the single instances : for example on Horizontal, only one slot 
+        //the left and right of ship, but several above/below.
+        if (y != 0 || y != 9) {
+            cantPlaceArray.add(tempX + "," + (tempY - 1));
+            cantPlaceArray.add(tempX + "," + (tempY + size + 1));
+        } else if (y == 0) {
+            cantPlaceArray.add(tempX + "," + (tempY + size + 1));
+        } else if (y == 9) {
+            cantPlaceArray.add(tempX + "," + (tempY - 1));
+        }
+
+        //places the positions to the sides of.
+        for (int i = 0; i < size; i++) {
+            if (x != 0 || x != 9) {
+                cantPlaceArray.add((tempX + 1) + "," + (tempY + i));
+                cantPlaceArray.add((tempX + 1) + "," + (tempY - i));
+            } else if (x == 0) {
+                cantPlaceArray.add((tempX + 1) + "," + (tempY + i));
+            } else if (x == 9) {
+                cantPlaceArray.add((tempX + 1) + "," + (tempY - i));
+            }
+        }
+
+    }
+
+    private void addAroundHoriz(int size, int x, int y) {
+        int tempX = x;
+        int tempY = y;
+
+        //place the single instances : for example on Horizontal, only one slot 
+        //the left and right of ship, but several above/below.
+        if (x != 0 || x != 9) {
+            cantPlaceArray.add((tempX - 1) + "," + tempY);
+            cantPlaceArray.add((tempX + size + 1) + "," + tempY);
+        } else if (tempX == 0) {
+            cantPlaceArray.add((tempX + size + 1) + "," + tempY);
+        } else if (tempX == 9) {
+            cantPlaceArray.add((tempX - 1) + "," + tempY);
+        }
+
+        //places the positions above and below.
+        for (int i = 0; i < size; i++) {
+            if (x != 0 || x != 9) {
+                cantPlaceArray.add((tempX + i) + "," + (tempY + 1));
+                cantPlaceArray.add((tempX + i) + "," + (tempY - 1));
+            } else if (x == 0) {
+                cantPlaceArray.add((tempX + i) + "," + (tempY + 1));
+            } else if (x == 9) {
+                cantPlaceArray.add((tempX + i) + "," + (tempY - 1));
+            }
         }
     }
 
@@ -139,9 +209,8 @@ public class RandomPlayer implements BattleshipsPlayer {
      */
     @Override
     public Position getFireCoordinates(Fleet enemyShips) {
-        shot = board.get(rnd.nextInt(board.size()));
-        board.remove(board.indexOf(shot));
-        return shot;
+
+        return null;
     }
 
     /**
@@ -156,7 +225,7 @@ public class RandomPlayer implements BattleshipsPlayer {
      */
     @Override
     public void hitFeedBack(boolean hit, Fleet enemyShips) {
-        //Do nothing
+
     }
 
     /**
@@ -167,7 +236,7 @@ public class RandomPlayer implements BattleshipsPlayer {
      */
     @Override
     public void startMatch(int rounds, Fleet ships, int sizeX, int sizeY) {
-
+        //Do nothing...
     }
 
     /**
@@ -177,11 +246,44 @@ public class RandomPlayer implements BattleshipsPlayer {
      */
     @Override
     public void startRound(int round) {
-        shotsFired.clear();
-        board.clear();
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 10; j++) {
-                board.add(new Position(i, j));
+        int n;
+        int s;
+        int e;
+        int w;
+        int curPos;
+        int heatPoints;
+
+        for (int i = 0; i < 10; i++) { //x pos ->
+            for (int j = 9; j >= 0; j--) { //y pos
+                heatPoints = 0;
+                n = 0;
+                curPos = j;
+                north: //looks on free spaces above this pos
+                while (curPos >= 0 && enemyBoard[i][curPos] == 0) {
+                    curPos--;
+                    n++;
+                }
+                s = 0;
+                curPos = j;
+                south: //looks on free spaces below this pos
+                while (curPos <= 9 && enemyBoard[i][curPos] == 0) {
+                    curPos++;
+                    s++;
+                }
+                e = 0;
+                curPos = i;
+                east: //looks on free spaces to the right this pos
+                while (curPos <= 9 && enemyBoard[curPos][j] == 0) {
+                    curPos++;
+                    e++;
+                }
+                w = 0;
+                curPos = i;
+                west: //looks on free spaces east this pos
+                while (curPos >= 0 && enemyBoard[curPos][j] == 0) {
+                    curPos--;
+                    w++;
+                }
             }
         }
     }
@@ -198,7 +300,16 @@ public class RandomPlayer implements BattleshipsPlayer {
      */
     @Override
     public void endRound(int round, int points, int enemyPoints) {
-        //Do nothing
+        if (points > scoreMax) {
+            scoreMax = points;
+        }
+        if (points < scoreMin) {
+            scoreMin = points;
+        }
+        /*if(points == 100){
+            System.exit(0);
+        }*/
+        totalShotsFired += 100 - points;
     }
 
     /**
@@ -211,6 +322,10 @@ public class RandomPlayer implements BattleshipsPlayer {
      */
     @Override
     public void endMatch(int won, int lost, int draw) {
-        //Do nothing
+        System.out.println("Max score: " + scoreMax);
+        System.out.println("Min score: " + scoreMin);
+        System.out.println("Total Shots: " + totalShotsFired);
+        System.out.println("Avg: " + totalShotsFired / (won + lost + draw));
+
     }
 }

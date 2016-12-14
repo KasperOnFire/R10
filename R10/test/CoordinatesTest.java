@@ -56,4 +56,5 @@ public class CoordinatesTest {
         assertEquals(expResult, result);
         System.out.println("testPosUp Passed");
     }
+
 }
